@@ -117,3 +117,112 @@ Sau quá trình tự tay cấu hình và thiết lập website bằng mã nguồ
 **Về tài nguyên tiêu thụ của máy chủ (RAM/CPU):**
 
 - **Tiêu tốn khá nhiều tài nguyên:** Nhược điểm của WordPress (và các CMS viết bằng PHP nói chung) là khá nặng. Khi chạy kết hợp cả container WordPress và MariaDB, hệ thống ngốn nhiều RAM (thường yêu cầu tối thiểu 1GB RAM để chạy mượt) và Disk I/O cao hơn so với các ứng dụng tự code gọn nhẹ. Nếu có lượng truy cập lớn, máy chủ sẽ rất dễ tốn tài nguyên CPU nếu không áp dụng các biện pháp tối ưu bộ nhớ đệm (Caching).
+
+### 7. PHẦN MỞ RỘNG: HỆ THỐNG TỰ ĐỘNG HÓA TẠO VÀ ĐĂNG BÀI VIẾT (AI & N8N)
+
+#### 7.1 Kiến trúc luồng xử lý (Automation Architecture)
+
+Hệ thống được thiết kế dựa trên sự liên kết của 4 thành phần chính:
+
+- **Telegram Bot:** Đóng vai trò là giao diện giao tiếp (User Interface) để người dùng gửi yêu cầu (Prompt).
+  
+- **n8n (Workflow Automation):** Đóng vai trò là trung tâm điều phối (Hub), nhận tin nhắn từ Telegram, chuyển tiếp cho AI xử lý và đẩy kết quả cuối cùng lên WordPress.
+  
+- **Google Gemini AI:** Đóng vai trò sinh nội dung, tiếp nhận Prompt và xuất ra văn bản được định dạng chuẩn HTML.
+  
+- **WordPress REST API:** Đóng vai trò tiếp nhận nội dung từ n8n và tự động khởi tạo thành một bài viết (Post) mới trên website.
+
+#### 7.2 Tích hợp n8n vào Docker
+
+- Khai báo thêm dịch vụ `n8n` vào tệp `docker-compose.yml`. Sử dụng tham số `command: start --tunnel` để n8n tự động thiết lập đường hầm (tunnel) ra Internet, đảm bảo khả năng tiếp nhận Webhook từ Telegram một cách tức thời.
+
+  <img width="1265" height="836" alt="image" src="https://github.com/user-attachments/assets/9c1c0049-b493-4634-9ec0-159e96070a3b" />
+
+- Khởi chạy bầng lệnh: `docker compose up -d`
+
+  <img width="1278" height="255" alt="image" src="https://github.com/user-attachments/assets/b7218a91-27eb-4ea5-9149-f0ea2adc3cb7" />
+
+#### 7.3 Thiết lập Khóa bảo mật và Phân quyền (Credentials)
+
+Để các dịch vụ độc lập có thể giao tiếp an toàn với nhau, hệ thống đã được thiết lập các cơ chế xác thực sau:
+
+- **WordPress Application Password :** Khởi tạo mật khẩu ứng dụng (App Password) độc lập dành riêng cho n8n. Việc này cho phép n8n gọi API đăng bài mà không cần sử dụng trực tiếp mật khẩu của quản trị viên hệ thống. Cách thực hiện: vào trang quản trị WordPress tại menu bên trái, chọn Thành viên (Users) -> Hồ sơ (Profile). Tìm mục Mật khẩu ứng dụng (Application Passwords) và ở ô "Tên ứng dụng mới" gõ n8n_bot rồi bấm nút Thêm mật khẩu ứng dụng mới. WordPress sẽ hiện ra một dãy mật khẩu
+ 
+  <img width="1919" height="1018" alt="image" src="https://github.com/user-attachments/assets/04ac80a9-548b-4551-8a53-c5f900b1cea6" />
+    
+- **Bước 2: Telegram Bot Token:** Khởi tạo Bot thông qua hệ thống BotFather và trích xuất chuỗi Token để cấp quyền cho n8n đọc/gửi tin nhắn qua API của Telegram. Cách thực hiện: mở ứng dụng Telegram gõ vào ô tìm kiếm chữ: @BotFather. Bấm Start rồi gõ lệnh /newbot, gõ tên Bot (Name) tùy thích (ví dụ: AI Đăng Bài), gõ tên Username của Bot (bắt buộc phải gõ không dấu, viết liền và kết thúc bằng chữ bot, ví dụ: hieunm_wp_ai_bot). BotFather sẽ đưa ra một dòng Token (dạng 123456789:AAH...)
+ 
+  <img width="654" height="614" alt="image" src="https://github.com/user-attachments/assets/7b4fc768-4936-4f0b-84b1-bc1d198f48e5" />
+
+- **Bước 3: Google Gemini API Key:** Tích hợp khóa API từ nền tảng Google AI Studio để n8n có quyền truy cập và gọi mô hình ngôn ngữ lớn (LLM) xử lý văn bản. Cách thực hiện: truy cập vào Google AI Studio: `https://aistudio.google.com/` và đăng nhập bằng Gmail, tại menu bên trái bấm vào Get API key -> Create API key -> Create API key in new project. Hệ thống sẽ sinh ra một chuỗi mã API Key
+ 
+  <img width="647" height="501" alt="Screenshot 2026-05-13 225603" src="https://github.com/user-attachments/assets/4aa7b470-8e60-49ed-8a2b-2b38a398b95a" />
+
+#### 7.4 Xây dựng Workflow trên n8n
+
+- Truy cập vào `http://192.168.153.128:5678` lúc này sẽ thấy báo lỗi "secure cookie". Đây là một tính năng bảo mật mới của n8n, nó yêu cầu phải truy cập bằng https, nếu truy cập bằng http cục bộ qua IP 192.168... thì nó sẽ chặn lại ngay để bảo vệ mật khẩu.
+
+  <img width="1899" height="1041" alt="Screenshot 2026-05-13 230247" src="https://github.com/user-attachments/assets/c9a20d2b-848a-4851-9670-acd7b7221e7a" />
+
+- Cách tắt đi: sử dụng lệnh `sudo nano docker-compose.yml` để mở file và thêm dòng `- N8N_SECURE_COOKIE=false` vào phần `environment:` của thằng `n8n`. Sau khi thêm khởi chạy lại bằng lệnh `docker compose up -d`
+
+  <img width="1287" height="838" alt="image" src="https://github.com/user-attachments/assets/4182a595-0d04-4f6f-976f-f15fac963727" />
+
+- Sau khi khởi chạy lại, vào lại `http://192.168.153.128:5678` sẽ thấy `n8n` yêu cầu tạo tài khoản admin nội bộ
+
+  <img width="1919" height="1031" alt="image" src="https://github.com/user-attachments/assets/1a22c1b3-d866-439d-9a8f-b5692697d0ea" />
+
+- Đăng nhập thành công và giao diện của `n8n` sẽ hiện ra
+
+  <img width="1919" height="1029" alt="image" src="https://github.com/user-attachments/assets/8552d104-5147-4c5c-944f-0ee1604d83e8" />
+
+- Xây dựng Workflow trên `n8n`: Bấm Start from scratch -> Add first step.
+
+  - **NODE 1: TELEGRAM TRIGGER**
+
+    - Ở thanh tìm kiếm bên phải gõ chữ Telegram -> Chọn biểu tượng Telegram -> On message
+
+      <img width="1916" height="1023" alt="image" src="https://github.com/user-attachments/assets/061a9664-d8b0-4060-991c-39dca8b9ad53" />
+      
+    - Ở phần Parameter tại mục Credential chọn Set up Credential
+   
+      <img width="1919" height="1022" alt="image" src="https://github.com/user-attachments/assets/6da3375f-aaff-454e-a517-10d37f5c31b5" />
+
+    - Khi cửa sổ hiện ra dán mã Token của BotFather vào ô Access Token rồi bấm Save
+   
+      <img width="1919" height="1028" alt="image" src="https://github.com/user-attachments/assets/e2f087ae-3e12-4836-8592-399d6b1ea80e" />
+
+    - Đóng cửa sổ cài đặt Token lại chọn nút Test this trigger để n8n bắt đầu ở trạng thái chờ. Mở Telegram chat với Bot câu: "Test hệ thống". Quay lại n8n sẽ thấy nó hiện chữ Success
+
+      <img width="1919" height="1016" alt="image" src="https://github.com/user-attachments/assets/8e1ed5c8-9cd0-4fc5-9cea-c3a08af0762a" />
+
+  - **NODE 2: Google Gemini**
+ 
+    - Bấm vào dấu + nằm ngay bên phải cái Node Telegram Trigger rồi gõ chữ Google Gemini -> Chọn biểu tượng Google Gemini -> Message a model
+   
+      <img width="1919" height="1019" alt="image" src="https://github.com/user-attachments/assets/922944c5-96ce-409b-816f-0b38fb59f3a3" />
+
+    - Ở phần Parameter tại mục Credential chọn Set up Credential. Khi cửa sổ hiện ra dán mã dán mã API Key đã lấy ở Google AI Studio vào, sau đó bấm Save.
+   
+      <img width="1919" height="1029" alt="image" src="https://github.com/user-attachments/assets/50c90591-1742-4836-a1ea-9e11957e34a4" />
+
+    - Mục Model nó tự động chọn gemini-1.5-flash, có thể chọn phiên bản khác nếu muốn. Tại ô tên là Message thêm nội dung vào Prompt rồi chọn Expression. Ngay bên dưới bên trái của Prompt có 1 biểu tưởng ⤢ khi bấm vào một cửa sổ Edit Expression sẽ hiện ra. Kéo text (bên cạnh nó có ghi giá trị là "Test hệ thống") ở bên trái cửa sổ vào ngay sau dấu cách của chữ "Chủ đề bài viết là: ". Ngay lập tức sẽ có đoạn mã {{ $json.message.text }} tự động thêm vào đúng vị trí trong khung Prompt.
+   
+      <img width="1919" height="1016" alt="image" src="https://github.com/user-attachments/assets/4dc89c09-b5c9-4faa-bb1d-f85977f01a5f" />
+
+      <img width="1919" height="1018" alt="image" src="https://github.com/user-attachments/assets/ed36f92a-1fdb-46b7-8a7a-33f6c8e6cc1a" />
+
+    - Kết quả:
+   
+      <img width="1919" height="1020" alt="image" src="https://github.com/user-attachments/assets/538293bb-481b-47c0-8418-a8b2e54ab48b" />
+
+  - **Node 3: WordPress**
+
+    - Bấm vào dấu + nằm ngay bên phải cái Node Google Gemini gõ tìm và chọn WordPress -> Create a post
+   
+     <img width="1919" height="1021" alt="image" src="https://github.com/user-attachments/assets/d9ed724e-b765-451f-b3ca-c63dd9416716" />
+
+    - Ở phần Parameter tại mục Credential chọn Set up Credential. Khi cửa sổ hiện ra điền địa chỉ URL (`https://blog.nguyenmanhhieu.id.vn`), Username và Password (dùng Application Password)
+
+      <img width="1919" height="1018" alt="image" src="https://github.com/user-attachments/assets/44d5a1d3-4490-4891-97c8-3d1e4182cb71" />
+
