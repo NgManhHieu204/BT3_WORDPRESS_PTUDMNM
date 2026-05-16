@@ -224,5 +224,32 @@ Hệ thống được thiết kế dựa trên sự liên kết của 4 thành p
 
     - Ở phần Parameter tại mục Credential chọn Set up Credential. Khi cửa sổ hiện ra điền địa chỉ URL (`https://blog.nguyenmanhhieu.id.vn`), Username và Password (dùng Application Password)
 
-      <img width="1919" height="1018" alt="image" src="https://github.com/user-attachments/assets/44d5a1d3-4490-4891-97c8-3d1e4182cb71" />
+      <img width="1919" height="1021" alt="image" src="https://github.com/user-attachments/assets/b0b2b23a-66b4-46c7-bb6e-1e3c65d8ad03" />
 
+    - Cấu hình đăng bài: tại Title bật Expression lên rồi kéo text từ Telegram vào; tại Additional Fields chọn Add rồi chọn Content, bật Expression lên rồi kéo text từ Gemini vào; Tiếp tục bấm Add Field -> Chọn Status tại đây mặc định sẽ là Draft chọn thành Publish để bài viết được public thẳng lên trang chủ
+   
+      <img width="1919" height="1023" alt="image" src="https://github.com/user-attachments/assets/2db6a6ec-72ad-4d3d-b439-7ca4d6192d36" />
+
+      <img width="1919" height="1024" alt="image" src="https://github.com/user-attachments/assets/c8131793-41ba-4e39-844a-0dc1f2e53709" />
+
+      <img width="1919" height="1029" alt="image" src="https://github.com/user-attachments/assets/e15bfea7-2553-43e3-b9ca-738be9175203" />
+
+    - Kết quả: bấm nút Execute step và cột Output bên phải sẽ trả về một dãy dữ liệu và một cái link
+   
+      <img width="1919" height="1023" alt="image" src="https://github.com/user-attachments/assets/423164fc-0bea-4c68-93b2-8d2fe3efdc35" />
+
+    - Cuối cùng tại góc trên cùng bên phải chọn Publish để chuyển sang trạng thái Active
+
+      <img width="1919" height="1016" alt="image" src="https://github.com/user-attachments/assets/dbcb37d8-f7e9-4a96-b32e-07a4c86ae3f0" />
+
+      <img width="1919" height="1027" alt="image" src="https://github.com/user-attachments/assets/3aa52866-af9c-4ebd-9919-64b47f8c54fb" />
+
+#### Thành quả 
+
+    - Truy cập link và xem kết quả:
+   
+      <img width="1919" height="1022" alt="image" src="https://github.com/user-attachments/assets/56f21751-6d45-4c62-a75d-2c781acfcd13" />
+
+    - Thêm ví dụ: 
+
+      <img width="1919" height="1010" alt="image" src="https://github.com/user-attachments/assets/b7480e7b-49a9-43dd-b755-95110c394967" />
