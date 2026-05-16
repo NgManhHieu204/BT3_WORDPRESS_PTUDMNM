@@ -12,8 +12,7 @@ Website được xây dựng dựa trên mã nguồn mở **WordPress** và vậ
 | **MariaDB** | Hệ quản trị cơ sở dữ liệu lưu trữ nội dung website | Chạy ngầm |
 | **phpMyAdmin** | Công cụ giao diện web để quản lý trực tiếp CSDL | 8080 |
 | **WordPress** | Mã nguồn mở CMS, xử lý logic và giao diện người dùng | 8000 |
-
----
+| **n8n** | Nền tảng tự động hóa (Workflow Automation), đóng vai trò kết nối Telegram, AI Gemini và WordPress | 5678 |
 
 ### 2. Triển khai Hạ tầng & Cơ sở dữ liệu
 
