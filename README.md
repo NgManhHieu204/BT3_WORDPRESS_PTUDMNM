@@ -246,10 +246,10 @@ Hệ thống được thiết kế dựa trên sự liên kết của 4 thành p
 
 #### Thành quả 
 
-    - Truy cập link và xem kết quả:
+ - Truy cập link và xem kết quả:
    
-      <img width="1919" height="1022" alt="image" src="https://github.com/user-attachments/assets/56f21751-6d45-4c62-a75d-2c781acfcd13" />
+   <img width="1919" height="1022" alt="image" src="https://github.com/user-attachments/assets/56f21751-6d45-4c62-a75d-2c781acfcd13" />
 
-    - Thêm ví dụ: 
+- Thêm ví dụ: 
 
-      <img width="1919" height="1010" alt="image" src="https://github.com/user-attachments/assets/b7480e7b-49a9-43dd-b755-95110c394967" />
+  <img width="1919" height="1010" alt="image" src="https://github.com/user-attachments/assets/b7480e7b-49a9-43dd-b755-95110c394967" />
